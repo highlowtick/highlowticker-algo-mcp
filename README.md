@@ -46,3 +46,19 @@ Add to your MCP servers config:
   }
 }
 ```
+
+## Interactive testing (MCP Inspector)
+
+`mcp dev` loads its target as a standalone file, which breaks the package's
+relative imports. Use the `scripts/mcp_dev.py` shim (it re-exports the installed
+package's FastMCP instance) and keep the editable install active with `-e .`:
+
+```bash
+cd highlowticker-algo-mcp
+source .venv/bin/activate
+pip install "mcp[cli]"
+mcp dev -e . scripts/mcp_dev.py:mcp
+```
+
+The background feed reader starts via the server's FastMCP lifespan, so the
+Inspector's Tools tab returns live data (feed must be running on :7412).

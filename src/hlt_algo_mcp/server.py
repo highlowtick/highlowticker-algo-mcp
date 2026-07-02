@@ -8,15 +8,35 @@ from __future__ import annotations
 
 import asyncio
 import importlib.resources
-from typing import Optional
+from contextlib import asynccontextmanager
+from typing import AsyncIterator, Optional
 
 from mcp.server.fastmcp import FastMCP
 from hlt_algo_feed import AlgoFeed
 
 from .buffer import TapeBuffer
 
-mcp = FastMCP("highlowticker-algo-feed")
 BUFFER = TapeBuffer()
+
+
+async def _reader(url: str = "ws://127.0.0.1:7412") -> None:
+    """Background task: fold the live feed into BUFFER. Read-only (summary only)."""
+    async with AlgoFeed(url) as feed:
+        await feed.subscribe_summary()  # read-only: never watch()
+        async for ev in feed:
+            BUFFER.add(ev)
+
+
+@asynccontextmanager
+async def _feed_lifespan(_app: FastMCP) -> AsyncIterator[None]:
+    task = asyncio.create_task(_reader())
+    try:
+        yield
+    finally:
+        task.cancel()
+
+
+mcp = FastMCP("highlowticker-algo-feed", lifespan=_feed_lifespan)
 
 
 @mcp.tool()
@@ -59,23 +79,8 @@ def field_reference() -> str:
     return _resource_text("field-reference.md")
 
 
-async def _reader(url: str = "ws://127.0.0.1:7412") -> None:
-    """Background task: fold the live feed into BUFFER. Read-only (summary only)."""
-    async with AlgoFeed(url) as feed:
-        await feed.subscribe_summary()  # read-only: never watch()
-        async for ev in feed:
-            BUFFER.add(ev)
-
-
 def main() -> None:
-    async def runner():
-        task = asyncio.create_task(_reader())
-        try:
-            await mcp.run_stdio_async()
-        finally:
-            task.cancel()
-
-    asyncio.run(runner())
+    mcp.run()
 
 
 if __name__ == "__main__":
