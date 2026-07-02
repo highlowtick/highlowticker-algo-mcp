@@ -1,0 +1,550 @@
+{
+  "$id": "https://highlowtick.com/algo-feed.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AlgoEvent": {
+      "description": "Tagged by the JSON `\"type\"` field. Unknown types fail deserialization — the server logs them at `debug` and continues.",
+      "oneOf": [
+        {
+          "properties": {
+            "algo_id": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fill_status": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "order_id": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "price": {
+              "default": null,
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "side": {
+              "$ref": "#/definitions/TradeSide"
+            },
+            "size": {
+              "format": "double",
+              "type": "number"
+            },
+            "symbol": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "ALGO_ORDER"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "side",
+            "size",
+            "symbol",
+            "timestamp",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "algo_id": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fill_price": {
+              "format": "double",
+              "type": "number"
+            },
+            "order_id": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "side": {
+              "$ref": "#/definitions/TradeSide"
+            },
+            "size": {
+              "format": "double",
+              "type": "number"
+            },
+            "symbol": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "ALGO_FILL"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "fill_price",
+            "side",
+            "size",
+            "symbol",
+            "timestamp",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "algo_id": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reason": {
+              "default": "",
+              "type": "string"
+            },
+            "side": {
+              "$ref": "#/definitions/TradeSide"
+            },
+            "strength": {
+              "format": "double",
+              "type": "number"
+            },
+            "symbol": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "ALGO_SIGNAL"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "side",
+            "strength",
+            "symbol",
+            "timestamp",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "algo_id": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "order_id": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "symbol": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "ALGO_CANCEL"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol",
+            "timestamp",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "algo_id": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "open_positions": {
+              "format": "uint32",
+              "minimum": 0.0,
+              "type": "integer"
+            },
+            "realized": {
+              "format": "double",
+              "type": "number"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "ALGO_PNL"
+              ],
+              "type": "string"
+            },
+            "unrealized": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "open_positions",
+            "realized",
+            "timestamp",
+            "type",
+            "unrealized"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "algo_id": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "ALGO_HEARTBEAT"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "timestamp",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Free-form user-defined event. `tag` is required and routes the event through any tag-specific color mapping in `highlight.json → algo.panelColors.customByTag`. Everything else is optional — `message` is displayed in the panel; `data` is stored but rendered as a short preview only.",
+          "properties": {
+            "algo_id": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "data": {
+              "default": null
+            },
+            "message": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "symbol": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "tag": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "ALGO_CUSTOM"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "tag",
+            "timestamp",
+            "type"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "FlowSide": {
+      "enum": [
+        "buy",
+        "sell",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "TapeEvent": {
+      "description": "Broadcast payload for every new-high / new-low transition.\n\nFields map 1:1 to data already present in [`crate::EquityTick`] and [`crate::TrackerState`] — nothing is reconstructed. `Option` fields are serialized as `null` when the provider did not supply them.",
+      "properties": {
+        "buy_pct_5m": {
+          "description": "5-minute aggressive-buy share (0–100). Present only on `market_summary`.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "close_price": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "cvd": {
+          "description": "Session cumulative volume delta at event time.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "event": {
+          "$ref": "#/definitions/TapeEventKind"
+        },
+        "high_count": {
+          "description": "Per-symbol cumulative new-high count this session.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "is_week52_high": {
+          "type": "boolean"
+        },
+        "is_week52_low": {
+          "type": "boolean"
+        },
+        "last_price": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "last_size": {
+          "description": "Size of the classified print at event time.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "low_count": {
+          "description": "Per-symbol cumulative new-low count this session.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "market_high_rate_1m": {
+          "description": "Market-wide rolling rate — highs in last 60 s.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "market_high_rate_20m": {
+          "default": 0,
+          "description": "Market-wide rolling rate — highs in last 20 m.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "market_high_rate_30s": {
+          "description": "Market-wide rolling rate — highs in last 30 s.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "market_high_rate_5m": {
+          "default": 0,
+          "description": "Market-wide rolling rate — highs in last 5 m.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "market_low_rate_1m": {
+          "description": "Market-wide rolling rate — lows in last 60 s.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "market_low_rate_20m": {
+          "default": 0,
+          "description": "Market-wide rolling rate — lows in last 20 m.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "market_low_rate_30s": {
+          "description": "Market-wide rolling rate — lows in last 30 s.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "market_low_rate_5m": {
+          "default": 0,
+          "description": "Market-wide rolling rate — lows in last 5 m.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "pct_change": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "sell_pct_5m": {
+          "description": "5-minute aggressive-sell share (0–100). Present only on `market_summary`.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "session_high": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "session_low": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "top_imbalance": {
+          "description": "L1 top-of-book imbalance `(bidSize − askSize) / (bidSize + askSize)`.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "trade_side": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/FlowSide"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Aggressor on the print that accompanied this transition (`buy` / `sell` / `unknown`)."
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp (millisecond precision).",
+          "type": "string"
+        },
+        "type": {
+          "default": "TAPE_EVENT",
+          "description": "Constant `\"TAPE_EVENT\"` — lets generic JSON consumers dispatch without inspecting the full payload shape. Constructors set this via [`TapeEvent::new`]; deserialization defaults to the same constant so round-trips succeed without carrying the literal in a borrowed string.",
+          "type": "string"
+        },
+        "volume": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "volume_spike": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "event",
+        "high_count",
+        "is_week52_high",
+        "is_week52_low",
+        "low_count",
+        "market_high_rate_1m",
+        "market_high_rate_30s",
+        "market_low_rate_1m",
+        "market_low_rate_30s",
+        "symbol",
+        "ts",
+        "volume_spike"
+      ],
+      "type": "object"
+    },
+    "TapeEventKind": {
+      "description": "Which transition triggered this `TapeEvent`.\n\n- `price_update`: intraday last-price update for symbols requested by algo clients via `ALGO_WEB_WATCH` (stop/target tracking). - `market_summary`: periodic market push-pull + breadth bar, emitted only while a client is subscribed via `ALGO_WEB_SUMMARY`.",
+      "enum": [
+        "new_high",
+        "new_low",
+        "new_high_and_low",
+        "price_update",
+        "market_summary"
+      ],
+      "type": "string"
+    },
+    "TradeSide": {
+      "description": "BUY or SELL. Matches JSON string `\"BUY\"` / `\"SELL\"` (case-sensitive).",
+      "enum": [
+        "BUY",
+        "SELL"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Egress TapeEvent (HLT -> algo) and ingress AlgoEvent (algo -> HLT). See properties.egress and properties.ingress.",
+  "properties": {
+    "egress": {
+      "$ref": "#/definitions/TapeEvent"
+    },
+    "ingress": {
+      "$ref": "#/definitions/AlgoEvent"
+    }
+  },
+  "title": "HighLowTicker Algo Feed wire protocol"
+}

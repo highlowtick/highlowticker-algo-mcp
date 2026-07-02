@@ -1,0 +1,38 @@
+import pytest
+
+from hlt_algo_mcp.buffer import TapeBuffer
+from hlt_algo_mcp import server as srv
+from tests_helpers import ev
+
+
+@pytest.fixture(autouse=True)
+def fresh_buffer():
+    srv.BUFFER = TapeBuffer()
+    yield
+
+
+def test_recent_tape_tool_returns_dicts():
+    srv.BUFFER.add(ev("AAPL", "new_high", high_count=2))
+    out = srv.recent_tape(symbol="AAPL")
+    assert out and out[0]["symbol"] == "AAPL" and out[0]["high_count"] == 2
+
+
+def test_recent_tape_filters_by_kind():
+    srv.BUFFER.add(ev("AAPL", "new_high"))
+    srv.BUFFER.add(ev("NVDA", "new_low"))
+    out = srv.recent_tape(kind="new_low")
+    assert [o["symbol"] for o in out] == ["NVDA"]
+
+
+def test_get_market_summary_none_when_empty():
+    assert srv.get_market_summary() is None
+
+
+def test_get_market_summary_returns_latest():
+    srv.BUFFER.add(ev("-", "market_summary", buy_pct_5m=61.0))
+    assert srv.get_market_summary()["buy_pct_5m"] == 61.0
+
+
+def test_top_movers_tool():
+    srv.BUFFER.add(ev("NVDA", "new_low", low_count=4))
+    assert srv.top_movers(by="low", k=5) == [{"symbol": "NVDA", "count": 4}]
