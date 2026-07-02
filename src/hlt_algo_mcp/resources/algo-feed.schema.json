@@ -3,51 +3,45 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "AlgoEvent": {
-      "description": "Tagged by the JSON `\"type\"` field. Only `ALGO_CUSTOM` is defined; any other (or unknown) type fails deserialization — the server logs it at `debug` and continues.",
+      "description": "Ingress control frames (client → HLT), tagged by the JSON `\"type\"` field. These two subscribe commands are the only messages HLT acts on; any other (or unknown) type fails deserialization — the server logs it at `debug` and keeps the connection open.",
       "oneOf": [
         {
-          "description": "Free-form user-defined event. `tag` is required and routes the event through any tag-specific color mapping in `highlight.json → algo.panelColors.customByTag`. Everything else is optional — `message` is displayed in the panel; `data` is stored but rendered as a short preview only.\n\nThis is the sole ingress type HLT acts on: the two subscribe verbs (`tag = \"ALGO_WEB_WATCH\"` / `\"ALGO_WEB_SUMMARY\"`) are `AlgoCustom` frames the engine intercepts.",
+          "description": "`SUBSCRIBE_WATCH` — subscribe to `price_update` ticks for a set of symbols (e.g. open positions you are tracking stops/targets on). The list **replaces** the prior watch set; send an empty list to stop. Symbols are uppercased by the engine.",
           "properties": {
-            "algo_id": {
-              "default": null,
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "data": {
-              "default": null
-            },
-            "message": {
-              "default": null,
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "symbol": {
-              "default": null,
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "tag": {
-              "type": "string"
-            },
-            "timestamp": {
-              "type": "string"
+            "symbols": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
             },
             "type": {
               "enum": [
-                "ALGO_CUSTOM"
+                "SUBSCRIBE_WATCH"
               ],
               "type": "string"
             }
           },
           "required": [
-            "tag",
-            "timestamp",
+            "symbols",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "`SUBSCRIBE_SUMMARY` — toggle the periodic (~1.5 s) `market_summary` breadth stream on or off. `enabled` defaults to `true` when omitted.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "SUBSCRIBE_SUMMARY"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
             "type"
           ],
           "type": "object"
@@ -264,7 +258,7 @@
       "type": "object"
     },
     "TapeEventKind": {
-      "description": "Which transition triggered this `TapeEvent`.\n\n- `price_update`: intraday last-price update for symbols requested by algo clients via `ALGO_WEB_WATCH` (stop/target tracking). - `market_summary`: periodic market push-pull + breadth bar, emitted only while a client is subscribed via `ALGO_WEB_SUMMARY`.",
+      "description": "Which transition triggered this `TapeEvent`.\n\n- `price_update`: intraday last-price update for symbols requested by algo clients via `SUBSCRIBE_WATCH` (stop/target tracking). - `market_summary`: periodic market push-pull + breadth bar, emitted only while a client is subscribed via `SUBSCRIBE_SUMMARY`.",
       "enum": [
         "new_high",
         "new_low",
