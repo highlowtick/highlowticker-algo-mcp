@@ -19,8 +19,10 @@ pip install highlowticker-algo-mcp
 
 ## Requirements
 
-- HighLowTicker running with the algo feed enabled (Settings, Algo feed :7412).
-- Python 3.10 or newer.
+- [HighLowTicker](https://highlowtick.com) running with the algo feed enabled (Settings, Algo feed :7412).
+- Python 3.10 or newer. (The plain `highlowticker-algo-feed` client works on 3.9; the MCP layer needs 3.10.)
+
+Wire-protocol reference and examples: <https://highlowtick.com/algo-feed.html>
 
 ## Tools
 
