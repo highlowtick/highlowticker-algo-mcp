@@ -10,7 +10,7 @@ kind it is. See `schema://algo-feed` for the full machine-readable schema.
 | `new_high` | a symbol prints a new session high |
 | `new_low` | a symbol prints a new session low |
 | `new_high_and_low` | both in the same update |
-| `price_update` | a watched symbol ticks (requires a watch subscription; throttled ~750 ms) |
+| `price_update` | a watched symbol ticks (requires a watch subscription; one frame per tick, unthrottled) |
 | `market_summary` | periodic breadth push/pull (~1.5 s while subscribed); `symbol` is `-` |
 
 ## Fields
