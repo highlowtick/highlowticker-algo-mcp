@@ -36,3 +36,14 @@ def test_get_market_summary_returns_latest():
 def test_top_movers_tool():
     srv.BUFFER.add(ev("NVDA", "new_low", low_count=4))
     assert srv.top_movers(by="low", k=5) == [{"symbol": "NVDA", "count": 4}]
+
+
+def test_index_quotes_empty_before_any_index_event():
+    assert srv.index_quotes() == {}
+
+
+def test_index_quotes_returns_last_known_per_symbol():
+    srv.BUFFER.add(ev("SPY", "new_high", last_price=550.0, pct_change=0.8))
+    result = srv.index_quotes()
+    assert result["SPY"]["last_price"] == 550.0
+    assert result["SPY"]["pct_change"] == 0.8

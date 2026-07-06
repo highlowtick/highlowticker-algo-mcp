@@ -63,6 +63,16 @@ def top_movers(by: str = "high", k: int = 10) -> list[dict]:
     return [{"symbol": s, "count": c} for s, c in BUFFER.top_movers(by=by, k=k)]
 
 
+@mcp.tool()
+def index_quotes() -> dict[str, dict]:
+    """Last-known price/pct_change per configured index symbol (default
+    SPY/QQQ/IWM, override via HLT_INDEX_SYMBOLS env var). Each entry
+    includes its own `ts` so staleness is visible — this is the last
+    session-high/low crossing HighLowTicker actually saw for that symbol,
+    not a continuously live tick."""
+    return {sym: ev.model_dump() for sym, ev in BUFFER.index_quotes().items()}
+
+
 def _resource_text(name: str) -> str:
     return importlib.resources.files("hlt_algo_mcp").joinpath("resources", name).read_text()
 
