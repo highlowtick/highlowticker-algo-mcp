@@ -38,3 +38,30 @@ def test_top_movers_by_low():
     buf.add(ev("PWR", "new_low", low_count=4))
     buf.add(ev("ENPH", "new_low", low_count=2))
     assert buf.top_movers(by="low", k=5) == [("PWR", 4), ("ENPH", 2)]
+
+
+def test_index_quote_survives_buffer_eviction():
+    buf = TapeBuffer(maxlen=5)
+    buf.add(ev("SPY", "new_high", last_price=550.0, pct_change=0.8))
+    for i in range(10):
+        buf.add(ev("AAPL", "new_high", high_count=i))
+    assert buf.recent(symbol="SPY") == []  # evicted from the FIFO
+    assert buf.index_quotes()["SPY"].last_price == 550.0  # but retained here
+
+
+def test_index_quotes_only_tracks_configured_symbols():
+    buf = TapeBuffer(index_symbols=["SPY"])
+    buf.add(ev("QQQ", "new_high", last_price=480.0))
+    assert buf.index_quotes() == {}
+
+
+def test_index_quotes_env_var_override(monkeypatch):
+    monkeypatch.setenv("HLT_INDEX_SYMBOLS", "DIA,VTI")
+    import importlib
+    import hlt_algo_mcp.buffer as buffer_module
+    importlib.reload(buffer_module)
+    buf = buffer_module.TapeBuffer()
+    buf.add(ev("DIA", "new_high", last_price=400.0))
+    buf.add(ev("SPY", "new_high", last_price=550.0))
+    assert list(buf.index_quotes().keys()) == ["DIA"]
+    importlib.reload(buffer_module)  # restore default for later tests
