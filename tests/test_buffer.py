@@ -60,8 +60,11 @@ def test_index_quotes_env_var_override(monkeypatch):
     import importlib
     import hlt_algo_mcp.buffer as buffer_module
     importlib.reload(buffer_module)
-    buf = buffer_module.TapeBuffer()
-    buf.add(ev("DIA", "new_high", last_price=400.0))
-    buf.add(ev("SPY", "new_high", last_price=550.0))
-    assert list(buf.index_quotes().keys()) == ["DIA"]
-    importlib.reload(buffer_module)  # restore default for later tests
+    try:
+        buf = buffer_module.TapeBuffer()
+        buf.add(ev("DIA", "new_high", last_price=400.0))
+        buf.add(ev("SPY", "new_high", last_price=550.0))
+        assert list(buf.index_quotes().keys()) == ["DIA"]
+    finally:
+        monkeypatch.undo()  # restore env var *before* reloading, or the
+        importlib.reload(buffer_module)  # reload just re-picks up "DIA,VTI"
