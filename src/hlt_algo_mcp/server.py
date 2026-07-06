@@ -73,6 +73,26 @@ def index_quotes() -> dict[str, dict]:
     return {sym: ev.model_dump() for sym, ev in BUFFER.index_quotes().items()}
 
 
+@mcp.tool()
+def hottest_recent(by: str = "high", k: int = 10, window_seconds: int = 300) -> dict:
+    """Symbols ranked by new-high/new-low crossings in the trailing
+    window_seconds (default 5 min) — NOT cumulative like top_movers.
+
+    If this MCP process has been running for less than window_seconds, the
+    result only reflects the time actually observed (see coverage_seconds
+    in the response) — it under-reports on a freshly-started MCP rather
+    than silently claiming full-window coverage it doesn't have.
+    """
+    return {
+        "movers": [
+            {"symbol": s, "count": c}
+            for s, c in BUFFER.windowed_top_movers(by=by, k=k, window_seconds=window_seconds)
+        ],
+        "window_seconds": window_seconds,
+        "coverage_seconds": round(BUFFER.coverage_seconds(), 1),
+    }
+
+
 def _resource_text(name: str) -> str:
     return importlib.resources.files("hlt_algo_mcp").joinpath("resources", name).read_text()
 

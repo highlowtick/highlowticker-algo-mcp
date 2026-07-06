@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime, timezone
 
 from hlt_algo_mcp.buffer import TapeBuffer
 from hlt_algo_mcp import server as srv
@@ -53,3 +54,18 @@ def test_python_client_quickstart_resource_is_readable():
     text = srv.python_client_quickstart()
     assert "AlgoFeed" in text
     assert "pip install highlowticker-algo-feed" in text
+
+
+def test_hottest_recent_empty_before_any_event():
+    result = srv.hottest_recent()
+    assert result["movers"] == []
+    assert result["window_seconds"] == 300
+    assert result["coverage_seconds"] >= 0
+
+
+def test_hottest_recent_returns_ranked_movers():
+    now_ts = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    srv.BUFFER.add(ev("AAPL", "new_high", high_count=1, ts=now_ts))
+    result = srv.hottest_recent(window_seconds=300)
+    assert result["movers"] == [{"symbol": "AAPL", "count": 1}]
+    assert result["window_seconds"] == 300
