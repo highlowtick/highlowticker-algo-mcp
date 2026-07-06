@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from hlt_algo_mcp.buffer import TapeBuffer
 from tests_helpers import ev
 
@@ -68,3 +70,44 @@ def test_index_quotes_env_var_override(monkeypatch):
     finally:
         monkeypatch.undo()  # restore env var *before* reloading, or the
         importlib.reload(buffer_module)  # reload just re-picks up "DIA,VTI"
+
+
+def _iso(unix_ts: float) -> str:
+    return datetime.fromtimestamp(unix_ts, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def test_windowed_top_movers_excludes_entries_outside_window():
+    buf = TapeBuffer()
+    now = 1_800_000_000.0
+    buf.add(ev("AAPL", "new_high", high_count=1, ts=_iso(now - 10)))   # inside 300s window
+    buf.add(ev("AAPL", "new_high", high_count=2, ts=_iso(now - 400)))  # outside 300s window
+    assert buf.windowed_top_movers(by="high", window_seconds=300, now=now) == [("AAPL", 1)]
+
+
+def test_windowed_top_movers_symbol_isolation():
+    buf = TapeBuffer()
+    now = 1_800_000_000.0
+    buf.add(ev("AAPL", "new_high", high_count=1, ts=_iso(now)))
+    buf.add(ev("MSFT", "new_high", high_count=1, ts=_iso(now)))
+    buf.add(ev("AAPL", "new_high", high_count=2, ts=_iso(now)))
+    result = dict(buf.windowed_top_movers(by="high", window_seconds=300, now=now))
+    assert result == {"AAPL": 2, "MSFT": 1}
+
+
+def test_windowed_top_movers_by_low():
+    buf = TapeBuffer()
+    now = 1_800_000_000.0
+    buf.add(ev("PWR", "new_low", low_count=1, ts=_iso(now)))
+    assert buf.windowed_top_movers(by="low", window_seconds=300, now=now) == [("PWR", 1)]
+
+
+def test_windowed_tracking_ignores_unparseable_default_ts():
+    # tests_helpers.ev() defaults ts="t" — must not raise.
+    buf = TapeBuffer()
+    buf.add(ev("AAPL", "new_high", high_count=1))
+    assert buf.windowed_top_movers(by="high", window_seconds=300) == []
+
+
+def test_coverage_seconds_starts_near_zero():
+    buf = TapeBuffer()
+    assert 0 <= buf.coverage_seconds() < 1.0
