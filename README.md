@@ -28,12 +28,15 @@ Wire-protocol reference and examples: <https://highlowtick.com/algo-feed.html>
 
 - `get_market_summary()` — latest market push/pull and breadth summary.
 - `recent_tape(symbol=None, kind=None, n=20)` — recent new-high / new-low / price-update frames.
-- `top_movers(by="high", k=10)` — symbols ranked by cumulative new-high or new-low count.
+- `top_movers(by="high", k=10)` — symbols ranked by cumulative new-high or new-low count since session start.
+- `hottest_recent(by="high", k=10, window_seconds=300)` — symbols ranked by new-high/new-low crossings in a trailing window (default 5 min), distinct from `top_movers`'s cumulative count. Response includes `coverage_seconds` so a freshly-started MCP process visibly under-reports rather than silently claiming full-window coverage it hasn't observed yet.
+- `index_quotes()` — last-known price/pct_change for configured index symbols (default SPY/QQQ/IWM, override via `HLT_INDEX_SYMBOLS`), retained even as the rolling tape buffer evicts older events.
 
 ## Resources
 
 - `schema://algo-feed` — the wire-protocol JSON Schema.
 - `doc://field-reference` — a condensed field reference.
+- `doc://python-client-quickstart` — how to use the `hlt_algo_feed` pypi package's Python API (`AlgoFeed`, `run()`, `notify_when()`) to write a standalone strategy script, including a minimal runnable example.
 
 ## Claude Desktop config
 
