@@ -47,3 +47,9 @@ def test_index_quotes_returns_last_known_per_symbol():
     result = srv.index_quotes()
     assert result["SPY"]["last_price"] == 550.0
     assert result["SPY"]["pct_change"] == 0.8
+
+
+def test_python_client_quickstart_resource_is_readable():
+    text = srv.python_client_quickstart()
+    assert "AlgoFeed" in text
+    assert "pip install highlowticker-algo-feed" in text

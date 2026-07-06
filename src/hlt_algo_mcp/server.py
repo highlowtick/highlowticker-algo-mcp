@@ -89,6 +89,12 @@ def field_reference() -> str:
     return _resource_text("field-reference.md")
 
 
+@mcp.resource("doc://python-client-quickstart")
+def python_client_quickstart() -> str:
+    """How to use the hlt_algo_feed pypi package to write a standalone strategy."""
+    return _resource_text("python-client-quickstart.md")
+
+
 def main() -> None:
     mcp.run()
 
